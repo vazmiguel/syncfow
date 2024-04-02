@@ -30,11 +30,11 @@ Sync-FoldersOneWay -source "C:\MyStuff" -replica "E:\MyStuff" -logPath C:\path\t
 ## Limitations with FileSystemWatcher Class and reasons for Its Non-Utilization
 When implementing this solution, some limitations were encountered with the FileSystemWatcher class provided by .NET. 
 These limitations included:
-Unordered events. Even with synchronous call attempts to try delegating handlers synchronously, the result did not guarantee the order of events. 
-Missing events due to the fact that event handlers were busy while other similar events triggered (classic producer-consumer problem)
-The inability to know determine what notify filter was triggered in what event. A possible workaround (if not for the unordered events) would have been to create multiple FileSystemWatcher filters, each one for each Notify Filter. 
+*  Out-of-order events: Even with synchronous call attempts to try delegating handlers synchronously, the result did not guarantee the order of events. 
+*  Missing events: Due to the fact that event handlers were busy while other similar events triggered (classic producer-consumer problem).
+*  The inability to know determine what notify filter was triggered in what event. A possible workaround (if not for the unordered events) would have been to create multiple FileSystemWatcher filters, each one for each Notify Filter. 
 
-Additionally, it did not provide comprehensive information about some file system events, particularly for operations like file moves or replacements. 
+Additionally, it did not provide comprehensive information about some file system events, particularly for operations like file moves or replacements (that is however by design).
 The lack of detailed information and an out-of-order event made it challenging to accurately track these operations.
 
 ## Solution Approach
@@ -52,7 +52,7 @@ In this implementation, focus was on monitoring all typical file system operatio
 *  Replace Operations: Monitoring when a file is replaced with another file of the same name.
 
 ## Additional Features
-In addition to these operations, other relevant file system conditions are also captured, that could eventually impact the process, like checking the replica's free space and creating a sync audit process for folders where activity happened, to double-check synchronization woo's in case something goes wonky.
+In addition to these operations, other relevant file system conditions are also captured, that could eventually impact the process, like checking the replica's free space and creating a sync audit process for folders where activity happened, to double-check synchronization "woo's" in case something goes "wonky".
 
 ## Implementation Details
 As the synchronization process starts, the monitoring starts immediately in case changes are made while the source folder is being processed. Please note that large source folders could take a while. In this implementation, a separate PowerShell runspace running in a separate thread is responsible of gathering the file system events. This separate runspace employs a ConcurrentQueue to gather events and synchronize that information between runspaces without interfering with its synchronous ability to gather events, given a sufficiently large buffer. By using a separate thread, we prevent blocking the main execution thread, ensuring as smooth operation as possible of the monitoring and replication tasks.
