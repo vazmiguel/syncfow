@@ -590,7 +590,9 @@ Write-Host ""
 filter script:stop-sourceMonitorSync {
 param([switch]$quiet=$false)
 	
-	stop-ProcessReadDirectoryChanges -quiet:$quiet
+	if($null -ne (Get-Command stop-ProcessReadDirectoryChanges -ErrorAction SilentlyContinue) ) {
+		stop-ProcessReadDirectoryChanges -quiet:$quiet
+	}
 	
 	if(-not $quiet) {
 		if($logPath) { 
